@@ -1,0 +1,3 @@
+ebin/*
+src/scanner.erl
+src/parser.erl
