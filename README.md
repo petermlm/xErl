@@ -1,6 +1,7 @@
 Make a compiler from a simple language to x86 in Erlang. The language is just a simple integer calculator with variables and functions.
 
 Program:
+
     10+12*2
     x = 50
     x * 2
