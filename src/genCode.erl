@@ -81,12 +81,27 @@ genCodeMainAST(Device, [AST_Ele | AST_Tail], Context) ->
     genCodeMainInst(Device, AST_Ele, Context),
     genCodeMainAST(Device, AST_Tail, Context).
 
-genCodeMainInst(Device, AST_Ele, Context) ->
-    io:fwrite(Device, "Line~n", []).
+genCodeMainInst(Device, {assign, _Id, Expr}, Context) ->
+    % TODO
+    io:fwrite(Device, "assign~n", []),
+    genCodeMainInst(Device, Expr, Context);
 
-%% {assign, '$1', '$3'}.
-%% {fun_decl, '$2', '$4', '$7'}.
-%% {expr, '$2', '$1', '$3'}.
-%% {variable_usage, '$1'}.
-%% {integer, '$1'}.
-%% {fun_call, '$1', '$3'}.
+genCodeMainInst(Device, {fun_decl, _Id, _Args, _Expr}, Context) ->
+    % TODO
+    io:fwrite(Device, "fun_decl~n", []);
+
+genCodeMainInst(Device, {expr, _Op, _Expr1, _Expr2}, Context) ->
+    % TODO
+    io:fwrite(Device, "expr~n", []);
+
+genCodeMainInst(Device, {variable_usage, _Id}, Context) ->
+    % TODO
+    io:fwrite(Device, "variable_usage~n", []);
+
+genCodeMainInst(Device, {integer, _Integer}, Context) ->
+    % TODO
+    io:fwrite(Device, "integer~n", []);
+
+genCodeMainInst(Device, {fun_call, _Id, _Args}, Context) ->
+    % TODO
+    io:fwrite(Device, "fun_call~n", []).
