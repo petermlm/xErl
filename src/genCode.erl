@@ -8,6 +8,9 @@ genCode(Device, AST, Context) ->
     genBSS(Device, Context),
     MappedContext = mapVariablesToBuffer(dict:to_list(Context)),
 
+    % Generate .data part
+    genData(Device),
+
     % Generate functions and _start
     io:fwrite(Device, ".section .text~n~n", []),
     genFuncDecls(Device, AST, MappedContext),
@@ -49,6 +52,13 @@ countVariables([{_, variable} | T], Count) ->
 
 countVariables([_ | T], Count) ->
     countVariables(T, Count).
+
+% -----------------------------------------------------------------------------
+
+genData(Device) ->
+    io:fwrite(Device, ".section .data~n", []),
+    io:fwrite(Device, "OUTPUT_FORMAT:~n", []),
+    io:fwrite(Device, "    .ascii \"%d\\n\\0\"~n~n", []).
 
 % -----------------------------------------------------------------------------
 
@@ -108,6 +118,17 @@ genCodeMainAST(_Device, [], Context) -> Context;
 genCodeMainAST(Device, [AST_Ele | AST_Tail], Context) ->
     Context2 = genCodeMainInst(Device, AST_Ele, Context),
     genCodeMainAST(Device, AST_Tail, Context2).
+
+genCodeMainInst(Device, {expr_stat, Expr}, Context) ->
+    % Generate the code for the expression
+    genCodeMainInst(Device, Expr, Context),
+
+    % Make the output
+    io:fwrite(Device, "    push %eax~n", []),
+    io:fwrite(Device, "    push $OUTPUT_FORMAT~n", []),
+    io:fwrite(Device, "    call printf~n", []),
+
+    Context;
 
 genCodeMainInst(Device, {assign, {identifier, Id, _Lo}, Expr}, Context) ->
     % Expression code

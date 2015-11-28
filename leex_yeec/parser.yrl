@@ -20,7 +20,7 @@ Rootsymbol Statements.
 Statements -> Statement : ['$1'].
 Statements -> Statement Statements : ['$1' | '$2'].
 
-Statement -> Expr_Add nl : '$1'.
+Statement -> Expr_Add nl : {expr_stat, '$1'}.
 Statement -> Assign nl : '$1'.
 Statement -> FunDecl nl : '$1'.
 

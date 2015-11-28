@@ -13,6 +13,9 @@ checkSemanticAST([Head | Tail], Context) ->
 
 % -----------------------------------------------------------------------------
 
+checkSemantic({expr_stat, Expr}, Context) ->
+    checkSemantic(Expr, Context);
+
 checkSemantic({assign, {identifier, Id, _Lo}, Expr}, Context) ->
     % Check if the name already exists
     Context2 = case dict:is_key(Id, Context) of
