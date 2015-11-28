@@ -31,12 +31,7 @@ main([Input, Output]) ->
 
     try genCode:genCode(OutDevice, AST, Context)
     after file:close(OutDevice)
-    end,
-
-    %% io:write(Tokens),
-    %% io:write(AST),
-    %% io:write(dict:to_list(Context)),
-    io:fwrite("~s~n", [ok]).
+    end.
 
 getSource(Device) ->
     case io:get_line(Device, "") of

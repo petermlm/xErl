@@ -7,10 +7,6 @@ genCode(Device, AST, Context) ->
     % Generate .bss part
     genBSS(Device, Context),
     MappedContext = mapVariablesToBuffer(dict:to_list(Context)),
-    io:write(dict:to_list(Context)),
-    io:fwrite("~n", []),
-    io:write(dict:to_list(MappedContext)),
-    io:fwrite("~n", []),
 
     % Generate functions and _start
     io:fwrite(Device, ".section .text~n~n", []),
@@ -154,9 +150,6 @@ genCodeMainInst(Device, {expr, Op, Expr1, Expr2}, Context) ->
 genCodeMainInst(Device, {variable_usage, {identifier, Id, _Lo}}, Context) ->
     % Get address buffer for variable
     {Scope, Offset} = dict:fetch(Id, Context),
-
-    io:write({Scope, Offset}),
-    io:fwrite("~n", []),
 
     % Usage code
     case Scope of
