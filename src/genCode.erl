@@ -61,7 +61,7 @@ genFuncDecls(Device, AST, Context) ->
 
 genFuncDecls(_Device, [], _Context, _Counters) -> ok;
 
-genFuncDecls(Device, [{fun_decl, {identifier, Id, _}, _, FunBody} | AST_Tail], Context, Counters) ->
+genFuncDecls(Device, [{fun_decl, {identifier, Id, _}, Args, FunBody} | AST_Tail], Context, Counters) ->
     % Get count of the function
     Counters2 = dict:update_counter(Id, 1, Counters),
     Count = dict:fetch(Id, Counters2),
@@ -75,7 +75,8 @@ genFuncDecls(Device, [{fun_decl, {identifier, Id, _}, _, FunBody} | AST_Tail], C
     io:fwrite(Device, "    movl %esp, %ebp~n", []),
 
     % Function's body
-    genCodeMainInst(Device, FunBody, Context),
+    LocalContext = context:addLocalContext(Args, Context),
+    genCodeMainInst(Device, FunBody, LocalContext),
 
     % Function's epilogue
     io:fwrite(Device, "    movl %ebp, %esp~n", []),
@@ -151,15 +152,22 @@ genCodeMainInst(Device, {expr, Op, Expr1, Expr2}, Context) ->
     Context3;
 
 genCodeMainInst(Device, {variable_usage, {identifier, Id, _Lo}}, Context) ->
-    % TODO, for arguments
-
     % Get address buffer for variable
-    {variable, Offset} = dict:fetch(Id, Context),
+    {Scope, Offset} = dict:fetch(Id, Context),
+
+    io:write({Scope, Offset}),
+    io:fwrite("~n", []),
 
     % Usage code
-    io:fwrite(Device, "    movl $VARS, %ebx~n", []),
-    io:fwrite(Device, "    movl $~p, %ecx~n", [Offset]),
-    io:fwrite(Device, "    movl (%ebx, %ecx, 4), %eax~n", []),
+    case Scope of
+        variable ->
+            io:fwrite(Device, "    movl $VARS, %ebx~n", []),
+            io:fwrite(Device, "    movl $~p, %ecx~n", [Offset]),
+            io:fwrite(Device, "    movl (%ebx, %ecx, 4), %eax~n", []);
+
+        argument ->
+            io:fwrite(Device, "    movl ~p(%ebp), %eax~n", [(2+Offset)*4])
+    end,
 
     Context;
 
@@ -176,7 +184,7 @@ genCodeMainInst(Device, {fun_call, {identifier, Id, _Lo}, Args}, Context) ->
     io:fwrite(Device, "    call ~s_~p~n", [Id, FunCount]),
 
     % Reposition stack
-    io:fwrite(Device, "    addl ~p, %esp~n", [length(Args)*4]),
+    io:fwrite(Device, "    addl $~p, %esp~n", [length(Args)*4]),
 
     Context.
 

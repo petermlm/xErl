@@ -5,7 +5,7 @@ Program:
     10+12*2
     x = 50
     x * 2
-    def f(a) = a*x + 10
+    def f(a): a*x + 10
     f(10)
 
 Output:
