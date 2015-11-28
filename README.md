@@ -1,4 +1,6 @@
-Make a compiler from a simple language to x86 in Erlang. The language is just a simple integer calculator with variables and functions.
+A compiler from a simple language to x86 in Erlang. The language is just a simple integer calculator with variables and functions.
+
+This is just a personal project of mine and I did it to learn Erlang and x86.
 
 Program:
 
