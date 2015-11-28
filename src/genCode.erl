@@ -69,12 +69,12 @@ genFuncDecls(_Device, [], _Context, _Counters) -> ok;
 
 genFuncDecls(Device, [{fun_decl, {identifier, Id, _}, Args, FunBody} | AST_Tail], Context, Counters) ->
     % Get count of the function
-    Counters2 = dict:update_counter(Id, 1, Counters),
-    Count = dict:fetch(Id, Counters2),
+    Counters2 = dict:update_counter({Id, length(Args)}, 1, Counters),
+    Count = dict:fetch({Id, length(Args)}, Counters2),
 
     % Write head of the function
-    io:fwrite(Device, ".type ~s_~p, function~n", [Id, Count]),
-    io:fwrite(Device, "~s_~p:~n", [Id, Count]),
+    io:fwrite(Device, ".type ~s_~p_~p, function~n", [Id, length(Args), Count]),
+    io:fwrite(Device, "~s_~p_~p:~n", [Id, length(Args), Count]),
 
     % Function's prologue
     io:fwrite(Device, "    pushl %ebp~n", []),
@@ -195,7 +195,7 @@ genCodeMainInst(Device, {fun_call, {identifier, Id, _Lo}, Args}, Context) ->
 
     % Call
     {_, FunCount} = dict:fetch({Id, length(Args)}, Context),
-    io:fwrite(Device, "    call ~s_~p~n", [Id, FunCount]),
+    io:fwrite(Device, "    call ~s_~p_~p~n", [Id, length(Args), FunCount]),
 
     % Reposition stack
     io:fwrite(Device, "    addl $~p, %esp~n", [length(Args)*4]),
