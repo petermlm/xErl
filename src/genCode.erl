@@ -82,25 +82,41 @@ genCodeMainAST(Device, [AST_Ele | AST_Tail], Context) ->
     genCodeMainAST(Device, AST_Tail, Context).
 
 genCodeMainInst(Device, {assign, _Id, Expr}, Context) ->
-    % TODO
-    io:fwrite(Device, "assign~n", []),
-    genCodeMainInst(Device, Expr, Context);
+    % Expression code
+    genCodeMainInst(Device, Expr, Context),
+
+    % Assignment code
+    io:fwrite(Device, "    movl $VARS, %ebx~n", []),
+    io:fwrite(Device, "    movl %eax, (%ebx, 1, 4)~n", []);
 
 genCodeMainInst(Device, {fun_decl, _Id, _Args, _Expr}, Context) ->
     % TODO
     io:fwrite(Device, "fun_decl~n", []);
 
-genCodeMainInst(Device, {expr, _Op, _Expr1, _Expr2}, Context) ->
-    % TODO
-    io:fwrite(Device, "expr~n", []);
+genCodeMainInst(Device, {expr, Op, Expr1, Expr2}, Context) ->
+    % Code for first expression
+    genCodeMainInst(Device, Expr1, Context),
+    io:fwrite(Device, "    pushl %eax~n", []),
+
+    % Code for second expression
+    genCodeMainInst(Device, Expr2, Context),
+
+    io:fwrite(Device, "    popl %ebx~n", []),
+
+    % Code for this expression's op
+    case Op of
+        {'+', _} -> io:fwrite(Device, "    addl %ebx, %eax~n", []);
+        {'-', _} -> io:fwrite(Device, "    subl %ebx, %eax~n", []);
+        {'*', _} -> io:fwrite(Device, "    imull %ebx, %eax~n", []);
+        {'/', _} -> io:fwrite(Device, "    idivl %ebx, %eax~n", [])
+    end;
 
 genCodeMainInst(Device, {variable_usage, _Id}, Context) ->
     % TODO
     io:fwrite(Device, "variable_usage~n", []);
 
-genCodeMainInst(Device, {integer, _Integer}, Context) ->
-    % TODO
-    io:fwrite(Device, "integer~n", []);
+genCodeMainInst(Device, {integer, {integer, N, _}}, Context) ->
+    io:fwrite(Device, "    movl $~p, %eax~n", [N]);
 
 genCodeMainInst(Device, {fun_call, _Id, _Args}, Context) ->
     % TODO
