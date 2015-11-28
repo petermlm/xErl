@@ -71,9 +71,21 @@ genFuncDecls(Device, [_ | AST_Tail], Context, Counters) ->
 % -----------------------------------------------------------------------------
 
 genCodeMain(Device, AST, Context) ->
+    % Start label
     io:fwrite(Device, ".globl _start~n", []),
     io:fwrite(Device, "_start:~n", []),
-    genCodeMainAST(Device, AST, Context).
+
+    % Initialize Program
+    io:fwrite(Device, "    movl %esp, %ebp~n", []),
+    io:fwrite(Device, "    subl $0, %esp~n", []),
+
+    % Code for the function
+    genCodeMainAST(Device, AST, Context),
+
+    % Exit
+    io:fwrite(Device, "    movl $1, %eax~n", []),
+    io:fwrite(Device, "    movl $0, %ebx~n", []),
+    io:fwrite(Device, "    int $0x80~n", []).
 
 genCodeMainAST(_Device, [], _Context) -> ok;
 
@@ -87,7 +99,8 @@ genCodeMainInst(Device, {assign, _Id, Expr}, Context) ->
 
     % Assignment code
     io:fwrite(Device, "    movl $VARS, %ebx~n", []),
-    io:fwrite(Device, "    movl %eax, (%ebx, 1, 4)~n", []);
+    io:fwrite(Device, "    movl $0, %ecx~n", []), %TODO
+    io:fwrite(Device, "    movl %eax, (%ebx, %ecx, 4)~n", []);
 
 genCodeMainInst(Device, {fun_decl, _Id, _Args, _Expr}, Context) ->
     % TODO
