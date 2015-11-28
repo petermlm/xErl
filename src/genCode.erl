@@ -156,9 +156,25 @@ genCodeMainInst(Device, {variable_usage, {identifier, Id, _Lo}}, Context) ->
     io:fwrite(Device, "    movl $~p, %ecx~n", [Offset]),
     io:fwrite(Device, "    movl (%ebx, %ecx, 4), %eax~n", []);
 
-genCodeMainInst(Device, {integer, {integer, N, _}}, Context) ->
+genCodeMainInst(Device, {integer, {integer, N, _}}, _Context) ->
     io:fwrite(Device, "    movl $~p, %eax~n", [N]);
 
-genCodeMainInst(Device, {fun_call, _Id, _Args}, Context) ->
-    % TODO
-    io:fwrite(Device, "fun_call~n", []).
+genCodeMainInst(Device, {fun_call, {identifier, Id, _Lo}, Args}, Context) ->
+    % Put arguments
+    genCodeFunDeclArgs(Device, Args, Context),
+
+    % Call
+    io:fwrite(Device, "    call ~s~n", [Id]),
+
+    % Reposition stack
+    io:fwrite(Device, "    addl ~p, %esp~n", [length(Args)*4]).
+
+genCodeFunDeclArgs(_Device, [], _Context) -> ok;
+
+genCodeFunDeclArgs(Device, [Ele_Args | Tail_Args], Context) ->
+    % Arguments are placed in reserve order, so go recursivly first
+    genCodeFunDeclArgs(Device, Tail_Args, Context),
+
+    % Generate code for this argument
+    genCodeMainInst(Device, Ele_Args, Context),
+    io:fwrite(Device, "    pushl %eax~n", []).
