@@ -34,12 +34,12 @@ FunDecl -> def identifier open Decl_Args close ':' Expr_Add :
 Decl_Args -> identifier : ['$1'].
 Decl_Args -> identifier ',' Decl_Args : ['$1' | '$3'].
 
-Expr_Add -> Expr_Mult '+' Expr_Add : {expr_add, '$2', '$1', '$3'}.
-Expr_Add -> Expr_Mult '-' Expr_Add : {expr_add, '$2', '$1', '$3'}.
+Expr_Add -> Expr_Mult '+' Expr_Add : {expr, '$2', '$1', '$3'}.
+Expr_Add -> Expr_Mult '-' Expr_Add : {expr, '$2', '$1', '$3'}.
 Expr_Add -> Expr_Mult : '$1'.
 
-Expr_Mult -> Expr '*' Expr_Mult : {expr_mult, '$2', '$1', '$3'}.
-Expr_Mult -> Expr '/' Expr_Mult : {expr_mult, '$2', '$1', '$3'}.
+Expr_Mult -> Expr '*' Expr_Mult : {expr, '$2', '$1', '$3'}.
+Expr_Mult -> Expr '/' Expr_Mult : {expr, '$2', '$1', '$3'}.
 Expr_Mult -> Expr : '$1'.
 
 Expr -> F : '$1'.
