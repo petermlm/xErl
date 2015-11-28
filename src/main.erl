@@ -2,14 +2,14 @@
 -author("Pedro Melgueira").
 -compile(export_all).
 
-main([Input]) ->
+main([Input, Output]) ->
     % Get the program's source
-    {ok, Device} = try file:open(Input, [read])
-                   catch _ -> io:fwrite("Kia")
-                   end,
+    {ok, InDevice} = try file:open(Input, [read])
+                     catch _ -> io:fwrite("TODO")
+                     end,
 
-    Source = try getSource(Device)
-    after file:close(Device)
+    Source = try getSource(InDevice)
+    after file:close(InDevice)
     end,
 
     % Execute scanner and parser
@@ -24,9 +24,18 @@ main([Input]) ->
             io:format("Context error: ~s.~n", [Msg])
     end,
 
+    % Make output
+    {ok, OutDevice} = try file:open(Output, [write])
+                      catch _ -> io:fwrite("TODO")
+                      end,
+
+    try genCode:genCode(OutDevice, AST, Context)
+    after file:close(OutDevice)
+    end,
+
     %% io:write(Tokens),
     %% io:write(AST),
-    io:write(dict:to_list(Context)),
+    %% io:write(dict:to_list(Context)),
     io:fwrite("~s~n", [ok]).
 
 getSource(Device) ->

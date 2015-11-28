@@ -1,4 +1,6 @@
 ebin/*
 src/scanner.erl
 src/parser.erl
+
 erl_crash.dump
+*.swp
