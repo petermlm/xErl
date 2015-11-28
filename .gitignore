@@ -1,11 +1,7 @@
-ebin/*
 src/scanner.erl
 src/parser.erl
 
 erl_crash.dump
 *.swp
 
-examples/README_example/output.asm
-examples/ex1/output.asm
-examples/ex2/output.asm
-examples/ex3/output.asm
+examples/*/output*
