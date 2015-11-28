@@ -41,7 +41,7 @@ checkSemantic(Element, Context) ->
 
             Context2; % The context doens't contain the local scope
 
-        {integer, _, _} -> Context;
+        {integer, _} -> Context;
 
         {variable_usage, {identifier, Id, Lo}} ->
             % Check if name of the variable has been defined
