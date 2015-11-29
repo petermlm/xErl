@@ -159,21 +159,28 @@ genCodeMainInst(Device, {expr, Op, Expr1, Expr2}, Context) ->
     % Code for this expression's op
     case Op of
         {'+', _} -> io:fwrite(Device, "    popl %ebx~n", []),
-                    io:fwrite(Device, "    addl %eax, %ebx~n", []);
+                    io:fwrite(Device, "    addl %eax, %ebx~n", []),
+                    io:fwrite(Device, "    movl %ebx, %eax~n", []);
 
         {'-', _} -> io:fwrite(Device, "    popl %ebx~n", []),
-                    io:fwrite(Device, "    subl %eax, %ebx~n", []);
+                    io:fwrite(Device, "    subl %eax, %ebx~n", []),
+                    io:fwrite(Device, "    movl %ebx, %eax~n", []);
 
         {'*', _} -> io:fwrite(Device, "    popl %ebx~n", []),
-                    io:fwrite(Device, "    imull %eax, %ebx~n", []);
+                    io:fwrite(Device, "    imull %eax, %ebx~n", []),
+                    io:fwrite(Device, "    movl %ebx, %eax~n", []);
 
         {'/', _} -> io:fwrite(Device, "    movl %eax, %ebx~n", []),
                     io:fwrite(Device, "    popl %eax~n", []),
                     io:fwrite(Device, "    movl $0, %edx~n", []),
-                    io:fwrite(Device, "    idiv %ebx~n", [])
-    end,
+                    io:fwrite(Device, "    idiv %ebx~n", []);
 
-    io:fwrite(Device, "    movl %ebx, %eax~n", []),
+        {'%', _} -> io:fwrite(Device, "    movl %eax, %ebx~n", []),
+                    io:fwrite(Device, "    popl %eax~n", []),
+                    io:fwrite(Device, "    movl $0, %edx~n", []),
+                    io:fwrite(Device, "    idiv %ebx~n", []),
+                    io:fwrite(Device, "    movl %edx, %eax~n", [])
+    end,
 
     Context3;
 

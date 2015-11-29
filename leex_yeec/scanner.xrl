@@ -26,6 +26,7 @@ def : {token, {def, TokenLine}}.
 \-    : {token, {'-', TokenLine}}.
 \*    : {token, {'*', TokenLine}}.
 \/    : {token, {'/', TokenLine}}.
+\%    : {token, {'%', TokenLine}}.
 \=    : {token, {'=', TokenLine}}.
 \,    : {token, {',', TokenLine}}.
 

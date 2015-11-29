@@ -10,7 +10,7 @@ Terminals
     def ':'
     identifier
     integer
-    '+' '-' '*' '/' '='
+    '+' '-' '*' '/' '%' '='
     ','
     open close
     nl.
@@ -40,6 +40,7 @@ Expr_Add -> Expr_Mult : '$1'.
 
 Expr_Mult -> Expr_Un '*' Expr_Mult : {expr, '$2', '$1', '$3'}.
 Expr_Mult -> Expr_Un '/' Expr_Mult : {expr, '$2', '$1', '$3'}.
+Expr_Mult -> Expr_Un '%' Expr_Mult : {expr, '$2', '$1', '$3'}.
 Expr_Mult -> Expr_Un : '$1'.
 
 Expr_Un -> '-' Expr_Un : {neg, '$2'}.
