@@ -3,7 +3,8 @@
 EXAMPLES_INPUT=examples/README_example/input.xerl \
 				examples/ex1/input.xerl \
 				examples/ex2/input.xerl \
-				examples/ex3/input.xerl
+				examples/ex3/input.xerl \
+				examples/ex4/input.xerl
 EXAMPLES_CLEAN=$(EXAMPLES_INPUT:input.xerl=output*)
 
 ERLFLAGS=-pa ebin -noshell

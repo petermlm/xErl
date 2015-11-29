@@ -2,7 +2,7 @@ Nonterminals
     Statements Statement
     Assign
     FunDecl Decl_Args
-    Expr_Add Expr_Mult Expr
+    Expr_Add Expr_Mult Expr_Un Expr
     CallArgs
     F.
 
@@ -38,13 +38,17 @@ Expr_Add -> Expr_Mult '+' Expr_Add : {expr, '$2', '$1', '$3'}.
 Expr_Add -> Expr_Mult '-' Expr_Add : {expr, '$2', '$1', '$3'}.
 Expr_Add -> Expr_Mult : '$1'.
 
-Expr_Mult -> Expr '*' Expr_Mult : {expr, '$2', '$1', '$3'}.
-Expr_Mult -> Expr '/' Expr_Mult : {expr, '$2', '$1', '$3'}.
-Expr_Mult -> Expr : '$1'.
+Expr_Mult -> Expr_Un '*' Expr_Mult : {expr, '$2', '$1', '$3'}.
+Expr_Mult -> Expr_Un '/' Expr_Mult : {expr, '$2', '$1', '$3'}.
+Expr_Mult -> Expr_Un : '$1'.
+
+Expr_Un -> '-' Expr_Un : {neg, '$2'}.
+Expr_Un -> Expr : '$1'.
 
 Expr -> F : '$1'.
 F -> integer : {integer, '$1'}.
 F -> identifier : {variable_usage, '$1'}.
+F -> open Expr_Add close : '$2'.
 F -> identifier open close : {fun_call, '$1', []}.
 F -> identifier open CallArgs close : {fun_call, '$1', '$3'}.
 

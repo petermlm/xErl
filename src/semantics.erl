@@ -46,13 +46,17 @@ checkSemantic({fun_decl, {identifier, Id, _Lo}, Args, Expr}, Context) ->
 
 checkSemantic({integer, _}, Context) -> Context;
 
+checkSemantic({neg, Expr}, Context) ->
+    checkSemantic(Expr, Context),
+    Context;
+
 checkSemantic({variable_usage, {identifier, Id, Lo}}, Context) ->
     % Check if name of the variable has been defined
-    _VarValue = try dict:fetch(Id, Context)
-               catch error:_ ->
-                    Msg = io_lib:format("Variable ~s not declared on line ~p", [Id, Lo]),
-                    throw({context, Msg})
-               end,
+    try dict:fetch(Id, Context)
+    catch error:_ ->
+         Msg = io_lib:format("Variable ~s not declared on line ~p", [Id, Lo]),
+         throw({context, Msg})
+    end,
     Context;
 
 checkSemantic({expr, _Op, Expr1, Expr2}, Context) ->

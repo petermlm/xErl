@@ -156,15 +156,24 @@ genCodeMainInst(Device, {expr, Op, Expr1, Expr2}, Context) ->
     % Code for second expression
     Context3 = genCodeMainInst(Device, Expr2, Context2),
 
-    io:fwrite(Device, "    popl %ebx~n", []),
-
     % Code for this expression's op
     case Op of
-        {'+', _} -> io:fwrite(Device, "    addl %ebx, %eax~n", []);
-        {'-', _} -> io:fwrite(Device, "    subl %ebx, %eax~n", []);
-        {'*', _} -> io:fwrite(Device, "    imull %ebx, %eax~n", []);
-        {'/', _} -> io:fwrite(Device, "    idivl %ebx, %eax~n", [])
+        {'+', _} -> io:fwrite(Device, "    popl %ebx~n", []),
+                    io:fwrite(Device, "    addl %eax, %ebx~n", []);
+
+        {'-', _} -> io:fwrite(Device, "    popl %ebx~n", []),
+                    io:fwrite(Device, "    subl %eax, %ebx~n", []);
+
+        {'*', _} -> io:fwrite(Device, "    popl %ebx~n", []),
+                    io:fwrite(Device, "    imull %eax, %ebx~n", []);
+
+        {'/', _} -> io:fwrite(Device, "    movl %eax, %ebx~n", []),
+                    io:fwrite(Device, "    popl %eax~n", []),
+                    io:fwrite(Device, "    movl $0, %edx~n", []),
+                    io:fwrite(Device, "    idiv %ebx~n", [])
     end,
+
+    io:fwrite(Device, "    movl %ebx, %eax~n", []),
 
     Context3;
 
@@ -188,6 +197,13 @@ genCodeMainInst(Device, {variable_usage, {identifier, Id, _Lo}}, Context) ->
 genCodeMainInst(Device, {integer, {integer, N, _}}, Context) ->
     io:fwrite(Device, "    movl $~p, %eax~n", [N]),
     Context;
+
+genCodeMainInst(Device, {neg, Expr}, Context) ->
+    % Code for the expression
+    genCodeMainInst(Device, Expr, Context),
+
+    % Negate it
+    io:fwrite(Device, "    negl %eax~n", []);
 
 genCodeMainInst(Device, {fun_call, {identifier, Id, _Lo}, Args}, Context) ->
     % Put arguments
