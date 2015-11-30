@@ -12,7 +12,7 @@ Terminals
     identifier
     integer
     '+' '-' '*' '/' '%'
-    '>'
+    '<' '>' '<=' '>=' '==' '!='
     '=' ','
     open close open_b close_b
     nl.
@@ -57,7 +57,12 @@ F -> open Expr_Add close : '$2'.
 F -> identifier open close : {fun_call, '$1', []}.
 F -> identifier open CallArgs close : {fun_call, '$1', '$3'}.
 
+Expr_Bool -> Expr_Add '<' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
 Expr_Bool -> Expr_Add '>' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
+Expr_Bool -> Expr_Add '<=' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
+Expr_Bool -> Expr_Add '>=' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
+Expr_Bool -> Expr_Add '==' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
+Expr_Bool -> Expr_Add '!=' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
 Expr_Bool -> Expr_Add : '$1'.
 
 CallArgs -> Expr_Add : ['$1'].
