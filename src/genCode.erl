@@ -149,6 +149,61 @@ genCodeMainInst(_Device, {fun_decl, {identifier, Id, _}, Args, _Expr}, Context, 
     Context2 = dict:store({Id, length(Args)}, {ArgsList, FunCount+1}, Context),
     {Context2, LabelCounter};
 
+genCodeMainInst(Device, {expr_bool, {'and', _}, Expr1, Expr2}, Context, LabelCounter) ->
+    % Code for first expression
+    {Context2, LabelCounter} = genCodeMainInst(Device, Expr1, Context, LabelCounter),
+    io:fwrite(Device, "    pushl %eax~n", []),
+
+    % Code for second expression
+    {Context3, LabelCounter} = genCodeMainInst(Device, Expr2, Context2, LabelCounter),
+
+    % Code for this expression's op
+    io:fwrite(Device, "    popl %ebx~n", []),
+    io:fwrite(Device, "    andl %eax, %ebx~n", []),
+    io:fwrite(Device, "    movl %ebx, %eax~n", []),
+
+    {Context3, LabelCounter};
+
+genCodeMainInst(Device, {expr_bool, {'or', _}, Expr1, Expr2}, Context, LabelCounter) ->
+    % Code for first expression
+    {Context2, LabelCounter} = genCodeMainInst(Device, Expr1, Context, LabelCounter),
+    io:fwrite(Device, "    pushl %eax~n", []),
+
+    % Code for second expression
+    {Context3, LabelCounter} = genCodeMainInst(Device, Expr2, Context2, LabelCounter),
+
+    % Code for this expression's op
+    io:fwrite(Device, "    popl %ebx~n", []),
+    io:fwrite(Device, "    orl %eax, %ebx~n", []),
+    io:fwrite(Device, "    movl %ebx, %eax~n", []),
+
+    {Context3, LabelCounter};
+
+genCodeMainInst(Device, {expr_bool_lp, Op, Expr1, Expr2}, Context, LabelCounter) ->
+    % Code for first expression
+    {Context2, LabelCounter} = genCodeMainInst(Device, Expr1, Context, LabelCounter),
+    io:fwrite(Device, "    pushl %eax~n", []),
+
+    % Code for second expression
+    {Context3, LabelCounter} = genCodeMainInst(Device, Expr2, Context2, LabelCounter),
+
+    % Code for this expression's op
+    io:fwrite(Device, "    popl %ebx~n", []),
+    io:fwrite(Device, "    cmpl %eax, %ebx~n", []),
+
+    case Op of
+        {'<', _} -> io:fwrite(Device, "    setl %al~n", []);
+        {'>', _} -> io:fwrite(Device, "    setg %al~n", []);
+        {'<=', _} -> io:fwrite(Device, "    setle %al~n", []);
+        {'>=', _} -> io:fwrite(Device, "    setge %al~n", []);
+        {'==', _} -> io:fwrite(Device, "    sete %al~n", []);
+        {'!=', _} -> io:fwrite(Device, "    setne %al~n", [])
+    end,
+
+    io:fwrite(Device, "    movzbl %al, %eax~n", []),
+
+    {Context3, LabelCounter};
+
 genCodeMainInst(Device, {expr, Op, Expr1, Expr2}, Context, LabelCounter) ->
     % Code for first expression
     {Context2, LabelCounter} = genCodeMainInst(Device, Expr1, Context, LabelCounter),
@@ -182,31 +237,6 @@ genCodeMainInst(Device, {expr, Op, Expr1, Expr2}, Context, LabelCounter) ->
                     io:fwrite(Device, "    idiv %ebx~n", []),
                     io:fwrite(Device, "    movl %edx, %eax~n", [])
     end,
-
-    {Context3, LabelCounter};
-
-genCodeMainInst(Device, {expr_bool, Op, Expr1, Expr2}, Context, LabelCounter) ->
-    % Code for first expression
-    {Context2, LabelCounter} = genCodeMainInst(Device, Expr1, Context, LabelCounter),
-    io:fwrite(Device, "    pushl %eax~n", []),
-
-    % Code for second expression
-    {Context3, LabelCounter} = genCodeMainInst(Device, Expr2, Context2, LabelCounter),
-
-    % Code for this expression's op
-    io:fwrite(Device, "    popl %ebx~n", []),
-    io:fwrite(Device, "    cmpl %eax, %ebx~n", []),
-
-    case Op of
-        {'<', _} -> io:fwrite(Device, "    setl %al~n", []);
-        {'>', _} -> io:fwrite(Device, "    setg %al~n", []);
-        {'<=', _} -> io:fwrite(Device, "    setle %al~n", []);
-        {'>=', _} -> io:fwrite(Device, "    setge %al~n", []);
-        {'==', _} -> io:fwrite(Device, "    sete %al~n", []);
-        {'!=', _} -> io:fwrite(Device, "    setne %al~n", [])
-    end,
-
-    io:fwrite(Device, "    movzbl %al, %eax~n", []),
 
     {Context3, LabelCounter};
 

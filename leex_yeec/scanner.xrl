@@ -23,11 +23,8 @@ if       : {token, {'if', TokenLine}}.
 
 \:       : {token, {':', TokenLine}}.
 
-\+       : {token, {'+', TokenLine}}.
-\-       : {token, {'-', TokenLine}}.
-\*       : {token, {'*', TokenLine}}.
-\/       : {token, {'/', TokenLine}}.
-\%       : {token, {'%', TokenLine}}.
+and      : {token, {'and', TokenLine}}.
+or       : {token, {'or', TokenLine}}.
 
 \<       : {token, {'<', TokenLine}}.
 \>       : {token, {'>', TokenLine}}.
@@ -35,6 +32,12 @@ if       : {token, {'if', TokenLine}}.
 \>\=     : {token, {'>=', TokenLine}}.
 \=\=     : {token, {'==', TokenLine}}.
 \!\=     : {token, {'!=', TokenLine}}.
+
+\+       : {token, {'+', TokenLine}}.
+\-       : {token, {'-', TokenLine}}.
+\*       : {token, {'*', TokenLine}}.
+\/       : {token, {'/', TokenLine}}.
+\%       : {token, {'%', TokenLine}}.
 
 \=       : {token, {'=', TokenLine}}.
 \,       : {token, {',', TokenLine}}.

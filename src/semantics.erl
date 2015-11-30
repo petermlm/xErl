@@ -66,12 +66,17 @@ checkSemantic({variable_usage, {identifier, Id, Lo}}, Context) ->
     end,
     Context;
 
-checkSemantic({expr, _Op, Expr1, Expr2}, Context) ->
+checkSemantic({expr_bool, _Op, Expr1, Expr2}, Context) ->
     checkSemantic(Expr1, Context),
     checkSemantic(Expr2, Context),
     Context;
 
-checkSemantic({expr_bool, _Op, Expr1, Expr2}, Context) ->
+checkSemantic({expr_bool_lp, _Op, Expr1, Expr2}, Context) ->
+    checkSemantic(Expr1, Context),
+    checkSemantic(Expr2, Context),
+    Context;
+
+checkSemantic({expr, _Op, Expr1, Expr2}, Context) ->
     checkSemantic(Expr1, Context),
     checkSemantic(Expr2, Context),
     Context;

@@ -2,7 +2,7 @@ Nonterminals
     Statements Statement
     Assign
     FunDecl Decl_Args
-    Expr_Add Expr_Mult Expr_Un Expr Expr_Bool
+    Expr_Bool Expr_Bool_OR Expr_Bool_LP Expr_Add Expr_Mult Expr_Un Expr
     CallArgs.
 
 Terminals
@@ -10,8 +10,9 @@ Terminals
     ':'
     identifier
     integer
-    '+' '-' '*' '/' '%'
+    'and' 'or'
     '<' '>' '<=' '>=' '==' '!='
+    '+' '-' '*' '/' '%'
     '=' ','
     open close open_b close_b
     nl.
@@ -37,6 +38,19 @@ FunDecl -> def identifier open Decl_Args close ':' Expr_Add :
 Decl_Args -> identifier : ['$1'].
 Decl_Args -> identifier ',' Decl_Args : ['$1' | '$3'].
 
+Expr_Bool -> Expr_Bool_OR 'and' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
+Expr_Bool -> Expr_Bool_OR : '$1'.
+Expr_Bool_OR -> Expr_Bool_LP 'or' Expr_Bool_OR : {expr_bool, '$2', '$1', '$3'}.
+Expr_Bool_OR -> Expr_Bool_LP : '$1'.
+
+Expr_Bool_LP -> Expr_Add '<' Expr_Bool_LP : {expr_bool_lp, '$2', '$1', '$3'}.
+Expr_Bool_LP -> Expr_Add '>' Expr_Bool_LP : {expr_bool_lp, '$2', '$1', '$3'}.
+Expr_Bool_LP -> Expr_Add '<=' Expr_Bool_LP : {expr_bool_lp, '$2', '$1', '$3'}.
+Expr_Bool_LP -> Expr_Add '>=' Expr_Bool_LP : {expr_bool_lp, '$2', '$1', '$3'}.
+Expr_Bool_LP -> Expr_Add '==' Expr_Bool_LP : {expr_bool_lp, '$2', '$1', '$3'}.
+Expr_Bool_LP -> Expr_Add '!=' Expr_Bool_LP : {expr_bool_lp, '$2', '$1', '$3'}.
+Expr_Bool_LP -> Expr_Add : '$1'.
+
 Expr_Add -> Expr_Mult '+' Expr_Add : {expr, '$2', '$1', '$3'}.
 Expr_Add -> Expr_Mult '-' Expr_Add : {expr, '$2', '$1', '$3'}.
 Expr_Add -> Expr_Mult : '$1'.
@@ -54,14 +68,6 @@ Expr -> identifier : {variable_usage, '$1'}.
 Expr -> open Expr_Add close : '$2'.
 Expr -> identifier open close : {fun_call, '$1', []}.
 Expr -> identifier open CallArgs close : {fun_call, '$1', '$3'}.
-
-Expr_Bool -> Expr_Add '<' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
-Expr_Bool -> Expr_Add '>' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
-Expr_Bool -> Expr_Add '<=' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
-Expr_Bool -> Expr_Add '>=' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
-Expr_Bool -> Expr_Add '==' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
-Expr_Bool -> Expr_Add '!=' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
-Expr_Bool -> Expr_Add : '$1'.
 
 CallArgs -> Expr_Add : ['$1'].
 CallArgs -> Expr_Add ',' CallArgs : ['$1' | '$3'].
