@@ -259,6 +259,26 @@ genCodeMainInst(Device, {'if', ExprBool, Statments}, Context, LabelCounter) ->
 
     {Context3, LabelCounter3};
 
+genCodeMainInst(Device, {'while', ExprBool, Statments}, Context, LabelCounter) ->
+    WhileStartLabel = LabelCounter,
+    WhileConditionLabel = LabelCounter + 1,
+    LabelCounterN = LabelCounter + 2,
+
+    % Jump to condition
+    io:fwrite(Device, "    jmp LBL_~p~n", [WhileConditionLabel]),
+
+    % Statments
+    io:fwrite(Device, "LBL_~p:~n", [WhileStartLabel]),
+    {Context2, LabelCounter2} = genCodeMainAST(Device, Statments, Context, LabelCounterN),
+
+    % Contidtion of loop
+    io:fwrite(Device, "LBL_~p:~n", [WhileConditionLabel]),
+    {Context3, LabelCounter3} = genCodeMainInst(Device, ExprBool, Context2, LabelCounter2),
+    io:fwrite(Device, "    cmpl $0, %eax~n", []),
+    io:fwrite(Device, "    jne LBL_~p~n", [WhileStartLabel]),
+
+    {Context3, LabelCounter3};
+
 genCodeMainInst(Device, {variable_usage, {identifier, Id, _Lo}}, Context, LabelCounter) ->
     % Get address buffer for variable
     {Scope, Offset} = dict:fetch(Id, Context),

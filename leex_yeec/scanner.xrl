@@ -20,6 +20,7 @@ Rules.
 
 def      : {token, {def, TokenLine}}.
 if       : {token, {'if', TokenLine}}.
+while    : {token, {'while', TokenLine}}.
 
 \:       : {token, {':', TokenLine}}.
 
