@@ -241,7 +241,7 @@ genCodeMainInst(Device, {expr, Op, Expr1, Expr2}, Context, LabelCounter) ->
     {Context3, LabelCounter};
 
 genCodeMainInst(Device, {'if', ExprBool, Statments}, Context, LabelCounter) ->
-    ThisLabel = LabelCounter,
+    IfEndLabel = LabelCounter,
     LabelCounterN = LabelCounter + 1,
 
     % Write code for the expression
@@ -249,15 +249,38 @@ genCodeMainInst(Device, {'if', ExprBool, Statments}, Context, LabelCounter) ->
 
     % Write if code
     io:fwrite(Device, "    cmpl $0, %eax~n", []),
-    io:fwrite(Device, "    je LBL_~p~n", [ThisLabel]),
+    io:fwrite(Device, "    je LBL_~p~n", [IfEndLabel]),
 
     % Write statments
     {Context3, LabelCounter3} = genCodeMainAST(Device, Statments, Context2, LabelCounter2),
 
     % Write label for the end of the if
-    io:fwrite(Device, "LBL_~p:~n", [ThisLabel]),
+    io:fwrite(Device, "LBL_~p:~n", [IfEndLabel]),
 
     {Context3, LabelCounter3};
+
+genCodeMainInst(Device, {'ifelse', ExprBool, Statments, ElseStatments}, Context, LabelCounter) ->
+    IfEndLabel = LabelCounter,
+    ElseLabel = LabelCounter + 1,
+    LabelCounterN = LabelCounter + 2,
+
+    % Write code for the expression
+    {Context2, LabelCounter2} = genCodeMainInst(Device, ExprBool, Context, LabelCounterN),
+
+    % Write if code
+    io:fwrite(Device, "    cmpl $0, %eax~n", []),
+    io:fwrite(Device, "    je LBL_~p~n", [ElseLabel]),
+    {Context3, LabelCounter3} = genCodeMainAST(Device, Statments, Context2, LabelCounter2),
+    io:fwrite(Device, "    jmp LBL_~p~n", [IfEndLabel]),
+
+    % Write else
+    io:fwrite(Device, "LBL_~p:~n", [ElseLabel]),
+    {Context4, LabelCounter4} = genCodeMainAST(Device, ElseStatments, Context3, LabelCounter3),
+
+    % Write label for the end of the if
+    io:fwrite(Device, "LBL_~p:~n", [IfEndLabel]),
+
+    {Context4, LabelCounter4};
 
 genCodeMainInst(Device, {'while', ExprBool, Statments}, Context, LabelCounter) ->
     WhileStartLabel = LabelCounter,

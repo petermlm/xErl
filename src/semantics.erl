@@ -51,6 +51,14 @@ checkSemantic({'if', ExprBool, Statments}, Context) ->
     % Check the statements
     checkSemanticAST(Statments, Context);
 
+checkSemantic({'ifelse', ExprBool, Statments, ElseStatments}, Context) ->
+    % Check the expression
+    checkSemantic(ExprBool, Context),
+
+    % Check the statements
+    Context2 = checkSemanticAST(Statments, Context),
+    checkSemanticAST(ElseStatments, Context2);
+
 checkSemantic({'while', ExprBool, Statments}, Context) ->
     % Check the expression
     checkSemantic(ExprBool, Context),

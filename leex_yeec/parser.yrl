@@ -1,12 +1,12 @@
 Nonterminals
-    Statements Statement
+    Statements Statement If IfBody
     Assign
     FunDecl Decl_Args
     Expr_Bool Expr_Bool_OR Expr_Bool_LP Expr_Add Expr_Mult Expr_Un Expr
     CallArgs.
 
 Terminals
-    def 'if' 'while'
+    def 'if' 'else' 'while'
     ':'
     identifier
     integer
@@ -25,9 +25,14 @@ Statements -> Statement Statements : ['$1' | '$2'].
 Statement -> Expr_Add nl : {expr_stat, '$1'}.
 Statement -> Assign nl : '$1'.
 Statement -> FunDecl nl : '$1'.
-Statement -> 'if' Expr_Bool open_b nl Statements close_b nl : {'if', '$2', '$5'}.
+Statement -> If : '$1'.
 Statement -> 'while' Expr_Bool open_b nl Statements close_b nl : {'while', '$2', '$5'}.
 Statement -> Statement nl : '$1'.
+
+If   -> 'if' Expr_Bool IfBody               : {'if', '$2', '$3'}.
+If   -> 'if' Expr_Bool IfBody 'else' IfBody : {'ifelse', '$2', '$3', '$5'}.
+
+IfBody -> open_b nl Statements close_b nl : '$3'.
 
 Assign -> identifier '=' Expr_Add : {assign, '$1', '$3'}.
 
