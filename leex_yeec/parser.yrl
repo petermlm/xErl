@@ -29,8 +29,8 @@ Statement -> If : '$1'.
 Statement -> 'while' ExprBool open_b nl Statements close_b nl : {'while', '$2', '$5'}.
 Statement -> Statement nl : '$1'.
 
-If   -> 'if' ExprBool IfBody               : {'if', '$2', '$3'}.
-If   -> 'if' ExprBool IfBody 'else' IfBody : {'ifelse', '$2', '$3', '$5'}.
+If   -> 'if' ExprBool IfBody                                     : {'if', '$2', '$3'}.
+If   -> 'if' ExprBool open_b nl Statements close_b 'else' IfBody : {'ifelse', '$2', '$5', '$8'}.
 
 IfBody -> open_b nl Statements close_b nl : '$3'.
 

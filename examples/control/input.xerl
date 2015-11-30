@@ -1,0 +1,22 @@
+x = 0
+y = 0
+
+if x > 10 and y <= 20 [
+    a = x + y
+] else [
+    a = x - y
+]
+
+a
+
+i = 0
+s = 0
+while i < 10 [
+    if i < 5 [
+        s = s + i
+    ] else [
+        s = s + i * 2
+    ]
+]
+
+s

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+INPUT=$1
+ASM=${INPUT/\.xerl/\.asm}
+OBJ=${INPUT/\.xerl/\.o}
+EXE=${INPUT/\.xerl/}
+
+COMPILER="./ebin/main.beam"
+
+if ! [ -f "$COMPILER" ]
+then
+    echo "Compiler not compile. Run Make"
+    exit 1
+fi
+
+erl -pa ebin -noshell -s main main $INPUT $ASM -s init stop
+as $ASM -o $OBJ
+ld -dynamic-linker /lib/ld-linux.so.2 -o $EXE $OBJ -lc

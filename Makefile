@@ -1,16 +1,14 @@
 .PHONY: all compiler leex_yeec examples clean
 
 EXAMPLES_INPUT=examples/README_example/input.xerl \
-				examples/ex1/input.xerl \
-				examples/ex2/input.xerl \
-				examples/ex3/input.xerl \
-				examples/ex4/input.xerl \
-				examples/ex5/input.xerl
-EXAMPLES_CLEAN=$(EXAMPLES_INPUT:input.xerl=output*)
-
-ERLFLAGS=-pa ebin -noshell
-COMPILER=-s main main
-INIT_STOP=-s init stop
+				examples/arithmetic/input.xerl \
+				examples/control/input.xerl \
+				examples/functions/input.xerl \
+				examples/variables/input.xerl \
+				examples/fibonacci/input.xerl
+EXAMPLES_CLEAN=$(EXAMPLES_INPUT:input.xerl=input.asm) \
+				$(EXAMPLES_INPUT:input.xerl=input.o) \
+				$(EXAMPLES_INPUT:input.xerl=input)
 
 all: compiler examples
 
@@ -26,9 +24,7 @@ examples: $(EXAMPLES_INPUT)
 
 .PHONY: $(EXAMPLES_INPUT)
 $(EXAMPLES_INPUT):
-	erl $(ERLFLAGS) $(COMPILER) $@ $(subst input.xerl,output.asm,$@) $(INIT_STOP)
-	as $(subst input.xerl,output.asm,$@) -o $(subst input.xerl,output.o,$@)
-	ld -dynamic-linker /lib/ld-linux.so.2 -o $(subst input.xerl,output,$@) $(subst input.xerl,output.o,$@) -lc
+	./xerl $@
 
 clean:
 	rm -f $(EXAMPLES_CLEAN)

@@ -4,4 +4,6 @@ src/parser.erl
 erl_crash.dump
 *.swp
 
-examples/*/output*
+examples/*/input.asm
+examples/*/input.o
+examples/*/input
