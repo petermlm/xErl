@@ -3,8 +3,7 @@ Nonterminals
     Assign
     FunDecl Decl_Args
     Expr_Add Expr_Mult Expr_Un Expr Expr_Bool
-    CallArgs
-    F.
+    CallArgs.
 
 Terminals
     def 'if'
@@ -50,12 +49,11 @@ Expr_Mult -> Expr_Un : '$1'.
 Expr_Un -> '-' Expr_Un : {neg, '$2'}.
 Expr_Un -> Expr : '$1'.
 
-Expr -> F : '$1'.
-F -> integer : {integer, '$1'}.
-F -> identifier : {variable_usage, '$1'}.
-F -> open Expr_Add close : '$2'.
-F -> identifier open close : {fun_call, '$1', []}.
-F -> identifier open CallArgs close : {fun_call, '$1', '$3'}.
+Expr -> integer : {integer, '$1'}.
+Expr -> identifier : {variable_usage, '$1'}.
+Expr -> open Expr_Add close : '$2'.
+Expr -> identifier open close : {fun_call, '$1', []}.
+Expr -> identifier open CallArgs close : {fun_call, '$1', '$3'}.
 
 Expr_Bool -> Expr_Add '<' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
 Expr_Bool -> Expr_Add '>' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
