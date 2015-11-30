@@ -2,17 +2,19 @@ Nonterminals
     Statements Statement
     Assign
     FunDecl Decl_Args
-    Expr_Add Expr_Mult Expr_Un Expr
+    Expr_Add Expr_Mult Expr_Un Expr Expr_Bool
     CallArgs
     F.
 
 Terminals
-    def ':'
+    def 'if'
+    ':'
     identifier
     integer
-    '+' '-' '*' '/' '%' '='
-    ','
-    open close
+    '+' '-' '*' '/' '%'
+    '>'
+    '=' ','
+    open close open_b close_b
     nl.
 
 Rootsymbol Statements.
@@ -23,6 +25,8 @@ Statements -> Statement Statements : ['$1' | '$2'].
 Statement -> Expr_Add nl : {expr_stat, '$1'}.
 Statement -> Assign nl : '$1'.
 Statement -> FunDecl nl : '$1'.
+Statement -> 'if' Expr_Bool open_b nl Statements close_b nl : {'if', '$2', '$5'}.
+Statement -> Statement nl : '$1'.
 
 Assign -> identifier '=' Expr_Add : {assign, '$1', '$3'}.
 
@@ -52,6 +56,9 @@ F -> identifier : {variable_usage, '$1'}.
 F -> open Expr_Add close : '$2'.
 F -> identifier open close : {fun_call, '$1', []}.
 F -> identifier open CallArgs close : {fun_call, '$1', '$3'}.
+
+Expr_Bool -> Expr_Add '>' Expr_Bool : {expr_bool, '$2', '$1', '$3'}.
+Expr_Bool -> Expr_Add : '$1'.
 
 CallArgs -> Expr_Add : ['$1'].
 CallArgs -> Expr_Add ',' CallArgs : ['$1' | '$3'].

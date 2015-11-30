@@ -6,7 +6,7 @@
 genCode(Device, AST, Context) ->
     % Generate .bss part
     genBSS(Device, Context),
-    MappedContext = mapVariablesToBuffer(dict:to_list(Context)),
+    MappedContext = makeMappedContext(dict:to_list(Context)),
 
     % Generate .data part
     genData(Device),
@@ -18,18 +18,18 @@ genCode(Device, AST, Context) ->
 
 % -----------------------------------------------------------------------------
 
-mapVariablesToBuffer(ContextList) ->
-    mapVariablesToBuffer(ContextList, 0, dict:new()).
+makeMappedContext(ContextList) ->
+    makeMappedContext(ContextList, 0, dict:new()).
 
-mapVariablesToBuffer([], _Counter, MappedContext) -> MappedContext;
+makeMappedContext([], _Counter, MappedContext) -> MappedContext;
 
-mapVariablesToBuffer([{Id, variable} | T], Counter, MappedContext) ->
+makeMappedContext([{Id, variable} | T], Counter, MappedContext) ->
     MappedContext2 = dict:store(Id, {variable, Counter}, MappedContext),
-    mapVariablesToBuffer(T, Counter+1, MappedContext2);
+    makeMappedContext(T, Counter+1, MappedContext2);
 
-mapVariablesToBuffer([{{Id, ArgsNum}, Args} | T], Counter, MappedContext) ->
+makeMappedContext([{{Id, ArgsNum}, Args} | T], Counter, MappedContext) ->
     MappedContext2 = dict:store({Id, ArgsNum}, {Args, 0}, MappedContext),
-    mapVariablesToBuffer(T, Counter, MappedContext2).
+    makeMappedContext(T, Counter, MappedContext2).
 
 % -----------------------------------------------------------------------------
 
@@ -73,8 +73,8 @@ genFuncDecls(Device, [{fun_decl, {identifier, Id, _}, Args, FunBody} | AST_Tail]
     Count = dict:fetch({Id, length(Args)}, Counters2),
 
     % Write head of the function
-    io:fwrite(Device, ".type ~s_~p_~p, function~n", [Id, length(Args), Count]),
-    io:fwrite(Device, "~s_~p_~p:~n", [Id, length(Args), Count]),
+    io:fwrite(Device, ".type fun_~s_~p_~p, function~n", [Id, length(Args), Count]),
+    io:fwrite(Device, "fun_~s_~p_~p:~n", [Id, length(Args), Count]),
 
     % Function's prologue
     io:fwrite(Device, "    pushl %ebp~n", []),
@@ -82,7 +82,7 @@ genFuncDecls(Device, [{fun_decl, {identifier, Id, _}, Args, FunBody} | AST_Tail]
 
     % Function's body
     LocalContext = context:addLocalContext(Args, Context),
-    genCodeMainInst(Device, FunBody, LocalContext),
+    genCodeMainInst(Device, FunBody, LocalContext, 0),
 
     % Function's epilogue
     io:fwrite(Device, "    movl %ebp, %esp~n", []),
@@ -106,33 +106,33 @@ genCodeMain(Device, AST, Context) ->
     io:fwrite(Device, "    subl $0, %esp~n", []),
 
     % Code for the function
-    genCodeMainAST(Device, AST, Context),
+    genCodeMainAST(Device, AST, Context, 0),
 
     % Exit
     io:fwrite(Device, "    movl $1, %eax~n", []),
     io:fwrite(Device, "    movl $0, %ebx~n", []),
     io:fwrite(Device, "    int $0x80~n", []).
 
-genCodeMainAST(_Device, [], Context) -> Context;
+genCodeMainAST(_Device, [], Context, LabelCounter) -> {Context, LabelCounter};
 
-genCodeMainAST(Device, [AST_Ele | AST_Tail], Context) ->
-    Context2 = genCodeMainInst(Device, AST_Ele, Context),
-    genCodeMainAST(Device, AST_Tail, Context2).
+genCodeMainAST(Device, [AST_Ele | AST_Tail], Context, LabelCounter) ->
+    {Context2, LabelCounter2} = genCodeMainInst(Device, AST_Ele, Context, LabelCounter),
+    genCodeMainAST(Device, AST_Tail, Context2, LabelCounter2).
 
-genCodeMainInst(Device, {expr_stat, Expr}, Context) ->
+genCodeMainInst(Device, {expr_stat, Expr}, Context, LabelCounter) ->
     % Generate the code for the expression
-    genCodeMainInst(Device, Expr, Context),
+    genCodeMainInst(Device, Expr, Context, LabelCounter),
 
     % Make the output
     io:fwrite(Device, "    push %eax~n", []),
     io:fwrite(Device, "    push $OUTPUT_FORMAT~n", []),
     io:fwrite(Device, "    call printf~n", []),
 
-    Context;
+    {Context, LabelCounter};
 
-genCodeMainInst(Device, {assign, {identifier, Id, _Lo}, Expr}, Context) ->
+genCodeMainInst(Device, {assign, {identifier, Id, _Lo}, Expr}, Context, LabelCounter) ->
     % Expression code
-    Context2 = genCodeMainInst(Device, Expr, Context),
+    {Context2, LabelCounter} = genCodeMainInst(Device, Expr, Context, LabelCounter),
 
     % Get address of buffer for variable
     {variable, Offset} = dict:fetch(Id, Context2),
@@ -142,19 +142,20 @@ genCodeMainInst(Device, {assign, {identifier, Id, _Lo}, Expr}, Context) ->
     io:fwrite(Device, "    movl $~p, %ecx~n", [Offset]),
     io:fwrite(Device, "    movl %eax, (%ebx, %ecx, 4)~n", []),
 
-    Context2;
+    {Context2, LabelCounter};
 
-genCodeMainInst(_Device, {fun_decl, {identifier, Id, _}, Args, _Expr}, Context) ->
+genCodeMainInst(_Device, {fun_decl, {identifier, Id, _}, Args, _Expr}, Context, LabelCounter) ->
     {ArgsList, FunCount} = dict:fetch({Id, length(Args)}, Context),
-    dict:store({Id, length(Args)}, {ArgsList, FunCount+1}, Context);
+    Context2 = dict:store({Id, length(Args)}, {ArgsList, FunCount+1}, Context),
+    {Context2, LabelCounter};
 
-genCodeMainInst(Device, {expr, Op, Expr1, Expr2}, Context) ->
+genCodeMainInst(Device, {expr, Op, Expr1, Expr2}, Context, LabelCounter) ->
     % Code for first expression
-    Context2 = genCodeMainInst(Device, Expr1, Context),
+    {Context2, LabelCounter} = genCodeMainInst(Device, Expr1, Context, LabelCounter),
     io:fwrite(Device, "    pushl %eax~n", []),
 
     % Code for second expression
-    Context3 = genCodeMainInst(Device, Expr2, Context2),
+    {Context3, LabelCounter} = genCodeMainInst(Device, Expr2, Context2, LabelCounter),
 
     % Code for this expression's op
     case Op of
@@ -182,9 +183,46 @@ genCodeMainInst(Device, {expr, Op, Expr1, Expr2}, Context) ->
                     io:fwrite(Device, "    movl %edx, %eax~n", [])
     end,
 
-    Context3;
+    {Context3, LabelCounter};
 
-genCodeMainInst(Device, {variable_usage, {identifier, Id, _Lo}}, Context) ->
+genCodeMainInst(Device, {expr_bool, Op, Expr1, Expr2}, Context, LabelCounter) ->
+    % Code for first expression
+    {Context2, LabelCounter} = genCodeMainInst(Device, Expr1, Context, LabelCounter),
+    io:fwrite(Device, "    pushl %eax~n", []),
+
+    % Code for second expression
+    {Context3, LabelCounter} = genCodeMainInst(Device, Expr2, Context2, LabelCounter),
+
+    % Code for this expression's op
+    case Op of
+        {'>', _} -> io:fwrite(Device, "    popl %ebx~n", []),
+                    io:fwrite(Device, "    cmpl %eax, %ebx~n", []),
+                    io:fwrite(Device, "    setg %al~n", []),
+                    io:fwrite(Device, "    movzbl %al, %eax~n", [])
+    end,
+
+    {Context3, LabelCounter};
+
+genCodeMainInst(Device, {'if', ExprBool, Statments}, Context, LabelCounter) ->
+    ThisLabel = LabelCounter,
+    LabelCounterN = LabelCounter + 1,
+
+    % Write code for the expression
+    {Context2, LabelCounter2} = genCodeMainInst(Device, ExprBool, Context, LabelCounterN),
+
+    % Write if code
+    io:fwrite(Device, "    cmpl $0, %eax~n", []),
+    io:fwrite(Device, "    je LBL_~p~n", [ThisLabel]),
+
+    % Write statments
+    {Context3, LabelCounter3} = genCodeMainAST(Device, Statments, Context2, LabelCounter2),
+
+    % Write label for the end of the if
+    io:fwrite(Device, "LBL_~p:~n", [ThisLabel]),
+
+    {Context3, LabelCounter3};
+
+genCodeMainInst(Device, {variable_usage, {identifier, Id, _Lo}}, Context, LabelCounter) ->
     % Get address buffer for variable
     {Scope, Offset} = dict:fetch(Id, Context),
 
@@ -199,38 +237,40 @@ genCodeMainInst(Device, {variable_usage, {identifier, Id, _Lo}}, Context) ->
             io:fwrite(Device, "    movl ~p(%ebp), %eax~n", [(2+Offset)*4])
     end,
 
-    Context;
+    {Context, LabelCounter};
 
-genCodeMainInst(Device, {integer, {integer, N, _}}, Context) ->
+genCodeMainInst(Device, {integer, {integer, N, _}}, Context, LabelCounter) ->
     io:fwrite(Device, "    movl $~p, %eax~n", [N]),
-    Context;
+    {Context, LabelCounter};
 
-genCodeMainInst(Device, {neg, Expr}, Context) ->
+genCodeMainInst(Device, {neg, Expr}, Context, LabelCounter) ->
     % Code for the expression
-    genCodeMainInst(Device, Expr, Context),
+    genCodeMainInst(Device, Expr, Context, LabelCounter),
 
     % Negate it
-    io:fwrite(Device, "    negl %eax~n", []);
+    io:fwrite(Device, "    negl %eax~n", []),
 
-genCodeMainInst(Device, {fun_call, {identifier, Id, _Lo}, Args}, Context) ->
+    {Context, LabelCounter};
+
+genCodeMainInst(Device, {fun_call, {identifier, Id, _Lo}, Args}, Context, LabelCounter) ->
     % Put arguments
-    genCodeFunDeclArgs(Device, Args, Context),
+    genCodeFunDeclArgs(Device, Args, Context, LabelCounter),
 
     % Call
     {_, FunCount} = dict:fetch({Id, length(Args)}, Context),
-    io:fwrite(Device, "    call ~s_~p_~p~n", [Id, length(Args), FunCount]),
+    io:fwrite(Device, "    call fun_~s_~p_~p~n", [Id, length(Args), FunCount]),
 
     % Reposition stack
     io:fwrite(Device, "    addl $~p, %esp~n", [length(Args)*4]),
 
-    Context.
+    {Context, LabelCounter}.
 
-genCodeFunDeclArgs(_Device, [], _Context) -> ok;
+genCodeFunDeclArgs(_Device, [], _Context, _LabelCounter) -> ok;
 
-genCodeFunDeclArgs(Device, [Ele_Args | Tail_Args], Context) ->
+genCodeFunDeclArgs(Device, [Ele_Args | Tail_Args], Context, LabelCounter) ->
     % Arguments are placed in reserve order, so go recursivly first
-    genCodeFunDeclArgs(Device, Tail_Args, Context),
+    genCodeFunDeclArgs(Device, Tail_Args, Context, LabelCounter),
 
     % Generate code for this argument
-    genCodeMainInst(Device, Ele_Args, Context),
+    genCodeMainInst(Device, Ele_Args, Context, LabelCounter),
     io:fwrite(Device, "    pushl %eax~n", []).

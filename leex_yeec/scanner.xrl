@@ -7,8 +7,10 @@ Definitions.
 D = [0-9]+
 L = [a-zA-Z][a-zA-Z0-9]*
 
-Open  = \(
-Close = \)
+Open   = \(
+Close  = \)
+OpenB  = \[
+CloseB = \]
 
 Endls  = (\s|\t)*(\r?\n)
 Whites = \s+
@@ -17,21 +19,28 @@ Tabs   = \t+
 Rules.
 
 def : {token, {def, TokenLine}}.
-\:  : {token, {':', TokenLine}}.
+if  : {token, {'if', TokenLine}}.
 
-{L}  : {token, {identifier, TokenChars, TokenLine}}.
-{D}  : {token, {integer, list_to_integer(TokenChars), TokenLine}}.
+\:  : {token, {':', TokenLine}}.
 
 \+    : {token, {'+', TokenLine}}.
 \-    : {token, {'-', TokenLine}}.
 \*    : {token, {'*', TokenLine}}.
 \/    : {token, {'/', TokenLine}}.
 \%    : {token, {'%', TokenLine}}.
+
+\>    : {token, {'>', TokenLine}}.
+
 \=    : {token, {'=', TokenLine}}.
 \,    : {token, {',', TokenLine}}.
 
-{Open}  : {token, {open, TokenLine}}.
-{Close} : {token, {close, TokenLine}}.
+{Open}   : {token, {open, TokenLine}}.
+{Close}  : {token, {close, TokenLine}}.
+{OpenB}  : {token, {open_b, TokenLine}}.
+{CloseB} : {token, {close_b, TokenLine}}.
+
+{L}  : {token, {identifier, TokenChars, TokenLine}}.
+{D}  : {token, {integer, list_to_integer(TokenChars), TokenLine}}.
 
 {Endls}  : {token, {nl, TokenLine}}.
 {Whites} : skip_token.

@@ -44,6 +44,13 @@ checkSemantic({fun_decl, {identifier, Id, _Lo}, Args, Expr}, Context) ->
 
     Context2; % The context doens't contain the local scope
 
+checkSemantic({'if', ExprBool, Statments}, Context) ->
+    % Check the expression
+    checkSemantic(ExprBool, Context),
+
+    % Check the statements
+    checkSemanticAST(Statments, Context);
+
 checkSemantic({integer, _}, Context) -> Context;
 
 checkSemantic({neg, Expr}, Context) ->
@@ -60,6 +67,11 @@ checkSemantic({variable_usage, {identifier, Id, Lo}}, Context) ->
     Context;
 
 checkSemantic({expr, _Op, Expr1, Expr2}, Context) ->
+    checkSemantic(Expr1, Context),
+    checkSemantic(Expr2, Context),
+    Context;
+
+checkSemantic({expr_bool, _Op, Expr1, Expr2}, Context) ->
     checkSemantic(Expr1, Context),
     checkSemantic(Expr2, Context),
     Context;
