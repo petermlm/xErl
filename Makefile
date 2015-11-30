@@ -2,6 +2,7 @@
 
 EXAMPLES_INPUT=examples/README_example/input.xerl \
 				examples/arithmetic/input.xerl \
+				examples/logic/input.xerl \
 				examples/control/input.xerl \
 				examples/functions/input.xerl \
 				examples/variables/input.xerl \

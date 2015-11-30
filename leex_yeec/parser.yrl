@@ -2,7 +2,7 @@ Nonterminals
     Statements Statement If IfBody
     Assign
     FunDecl DeclArgs
-    ExprBool ExprBoolOR ExprBoolLP ExprAdd ExprMult ExprUn Expr
+    ExprBool ExprBoolAND ExprBoolLP ExprAdd ExprMult ExprUn Expr
     CallArgs.
 
 Terminals
@@ -44,17 +44,17 @@ FunDecl -> def identifier open DeclArgs close ':' ExprAdd :
 DeclArgs -> identifier : ['$1'].
 DeclArgs -> identifier ',' DeclArgs : ['$1' | '$3'].
 
-ExprBool -> ExprBoolOR 'and' ExprBool : {expr_bool, '$2', '$1', '$3'}.
-ExprBool -> ExprBoolOR : '$1'.
-ExprBoolOR -> ExprBoolLP 'or' ExprBoolOR : {expr_bool, '$2', '$1', '$3'}.
-ExprBoolOR -> ExprBoolLP : '$1'.
+ExprBool -> ExprBoolAND 'or' ExprBool : {expr_bool, '$2', '$1', '$3'}.
+ExprBool -> ExprBoolAND : '$1'.
+ExprBoolAND -> ExprBoolLP 'and' ExprBoolAND : {expr_bool, '$2', '$1', '$3'}.
+ExprBoolAND -> ExprBoolLP : '$1'.
 
-ExprBoolLP -> ExprAdd '<' ExprBoolLP : {expr_bool_lp, '$2', '$1', '$3'}.
-ExprBoolLP -> ExprAdd '>' ExprBoolLP : {expr_bool_lp, '$2', '$1', '$3'}.
-ExprBoolLP -> ExprAdd '<=' ExprBoolLP : {expr_bool_lp, '$2', '$1', '$3'}.
-ExprBoolLP -> ExprAdd '>=' ExprBoolLP : {expr_bool_lp, '$2', '$1', '$3'}.
-ExprBoolLP -> ExprAdd '==' ExprBoolLP : {expr_bool_lp, '$2', '$1', '$3'}.
-ExprBoolLP -> ExprAdd '!=' ExprBoolLP : {expr_bool_lp, '$2', '$1', '$3'}.
+ExprBoolLP -> ExprAdd '<' ExprAdd : {expr_bool_lp, '$2', '$1', '$3'}.
+ExprBoolLP -> ExprAdd '>' ExprAdd : {expr_bool_lp, '$2', '$1', '$3'}.
+ExprBoolLP -> ExprAdd '<=' ExprAdd : {expr_bool_lp, '$2', '$1', '$3'}.
+ExprBoolLP -> ExprAdd '>=' ExprAdd : {expr_bool_lp, '$2', '$1', '$3'}.
+ExprBoolLP -> ExprAdd '==' ExprAdd : {expr_bool_lp, '$2', '$1', '$3'}.
+ExprBoolLP -> ExprAdd '!=' ExprAdd : {expr_bool_lp, '$2', '$1', '$3'}.
 ExprBoolLP -> ExprAdd : '$1'.
 
 ExprAdd -> ExprMult '+' ExprAdd : {expr, '$2', '$1', '$3'}.

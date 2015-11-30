@@ -17,6 +17,8 @@ while i < 10 [
     ] else [
         s = s + i * 2
     ]
+
+    i = i + 1
 ]
 
 s
