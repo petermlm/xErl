@@ -2,6 +2,8 @@ A compiler from a simple language to x86 in Erlang. The language is just a simpl
 
 This is just a personal project of mine and I did it to learn Erlang and x86.
 
+[Link for blog post about this.](https://petermlm.wordpress.com/2015/12/01/compiler-from-simple-language-to-x86-in-erlang/)
+
 Program:
 
     # Variables are simply defined like so:
