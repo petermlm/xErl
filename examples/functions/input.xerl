@@ -1,9 +1,10 @@
-def f(x): x*2
-def f(x, y): x*y
+# A function is identified by its name and arguments number
+def f(x): x*2;
+def f(x, y): x*y;
 
-f(10)
-f(10, 20)
+f(10);
+f(10, 20);
 
-def f(x): x*5
+def f(x): x*5; # Redefines f with 1 argument
 
-f(10)
+f(10);
