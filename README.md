@@ -50,3 +50,30 @@ Output:
     2
     10
     0
+
+# 32 Bits
+
+*Added 24 April 2022*
+
+When I developed this project in 2015, I did so on my then old but reliable
+ACER laptop. This laptop had been bought by my parents for me while I was still
+in school in the year 2008. It was a 32 bit Intel Celeron and my only PC where
+I did programming on a personal level between 2008 and 2016.
+
+Because I was on my old laptop when I did this project, I simply made this
+compiler generate ASM code that would be compilable on that machine. I wasn't
+worried about compatibility, or other instruction sets and architectures. That
+was a bit out of scope for my experience at the time.
+
+But now in 2022, I still would like to at least make this project run. So
+instead of making it more complex, and generating ASM for 64 bits, I simply
+still compile only for 32 bits.
+
+To run this on a 64 bit machine, the following package is required:
+
+    libc6-dev-i386
+
+On a 32 bit machine, the `xerl` script should also be executed with a second
+argument set to 32, like so:
+
+    ./xerl ./examples/arithmetic/input.xerl 32

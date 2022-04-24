@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 INPUT=$1
+IN32=$2
 ASM=${INPUT/\.xerl/\.asm}
 OBJ=${INPUT/\.xerl/\.o}
 EXE=${INPUT/\.xerl/}
@@ -9,10 +10,23 @@ COMPILER="./ebin/main.beam"
 
 if ! [ -f "$COMPILER" ]
 then
-    echo "Compiler not compile. Run Make"
+    echo "Compiler not compiled. Run make all"
     exit 1
 fi
 
+echo "Generating asm code"
 erl -pa ebin -noshell -s main main $INPUT $ASM -s init stop
-as $ASM -o $OBJ
-ld -dynamic-linker /lib/ld-linux.so.2 -o $EXE $OBJ -lc
+
+echo "Compiling asm code"
+if [[ $IN32 == "32" ]]; then
+    as $ASM -o $OBJ
+else
+    as --32 $ASM -o $OBJ
+fi
+
+echo "Linking"
+if [[ $IN32 == "32" ]]; then
+    ld -dynamic-linker /lib/ld-linux.so.2 -o $EXE $OBJ -lc
+else
+    ld -m elf_i386 -dynamic-linker /lib/i386-linux-gnu/ld-linux.so.2 -o $EXE $OBJ -lc
+fi
